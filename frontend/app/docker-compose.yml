@@ -1,0 +1,33 @@
+version: '3'
+
+volumes:
+  nginx_data:
+      driver: local
+
+services:
+  app:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    container_name: "vite-vuejs"
+    ports:
+      - 8080:80
+    networks:
+      - fastapi_dev
+    
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-app
+    volumes:
+      - ./nginx/default.conf:/etc/nginx//conf.d/default.conf
+    ports:
+      - 80:80
+    depends_on:
+      - app
+    networks:
+      - fastapi_dev
+
+networks:
+  fastapi_dev:
+    external:
+      name: fastapi_dev
