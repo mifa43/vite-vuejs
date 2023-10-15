@@ -6,12 +6,16 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm install --no-cache
+RUN npm install bootstrap
+RUN npm i bootstrap-icons
+RUN npm install vue-material --save --force
+RUN npm i vue-material-design-icons --force
 
 COPY . .
 
-CMD ["npm","run","build"]
-# RUN npm run build
+# CMD ["npm","run","build","--force"]
+RUN npm run build
 
 FROM nginx:stable-alpine as production-nginx
 
