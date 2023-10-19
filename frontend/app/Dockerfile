@@ -11,6 +11,7 @@ RUN npm install bootstrap
 RUN npm i bootstrap-icons
 RUN npm install vue-material --save --force
 RUN npm i vue-material-design-icons --force
+RUN npm install axios --save --force
 
 COPY . .
 
