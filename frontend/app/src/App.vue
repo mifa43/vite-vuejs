@@ -10,6 +10,9 @@ import FolderIcon from 'vue-material-design-icons/FolderOutline.vue';
 import TableIcon from 'vue-material-design-icons/FileExcelOutline.vue';
 import InfoIcon from 'vue-material-design-icons/InformationOutline.vue';
 import PersonIcon from "vue-material-design-icons/DotsHorizontalCircleOutline.vue";
+import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 components: {
   MenuIcon;
@@ -22,6 +25,69 @@ components: {
   InfoIcon;
   PersonIcon;
 }
+
+var isUserLogedin = ref(false);
+const router = useRouter();
+const sendLogoutRequest = async () => {
+    const refreshToken = sessionStorage.getItem('refresh_token');
+    const requestLogoutBody = {
+      token: refreshToken // Zamijenite sa stvarnim refresh_token-om
+    };
+    try {
+        const response = await axios.post('http://0.0.0.0:8083/logout', requestLogoutBody);
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('refresh_token');
+        router.push('/registration-and-signin');  // redirekcija na formu
+        // server response
+    } catch (error) {
+        // zhavamo greske
+        console.error('Logout error:', error);
+        console.error(error.response.data.detail)
+    }
+}
+const checkTokenHideShow = () => {
+    const accessToken = sessionStorage.getItem('access_token');
+    
+    if (accessToken) {
+        
+        isUserLogedin.value = true;
+    }
+    else {
+        
+        isUserLogedin.value = false;
+    }
+}
+const checkAndClearToken = () => {
+    // checkTokenHideShow();
+  const accessToken = sessionStorage.getItem('access_token');
+  if (accessToken) {
+    const decodedToken = parseJwt(accessToken);
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    if (decodedToken.exp && decodedToken.exp < currentTime) {
+      // Token je istekao, obrisi ga
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
+      router.push('/registration-and-signin');
+
+      // Opcionalno: dodajte dodatnu logiku kao što je izlogovanje korisnika
+    }
+  }
+};
+
+const parseJwt = (token) => {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(atob(base64));
+  return JSON.parse(jsonPayload);
+};
+
+onMounted(() => {
+    setInterval(checkTokenHideShow, 10);    // proveravamo token svakih 10 milisekundi
+    
+  // Postavlja interval na 5 minuta (300000 milisekundi)
+  setInterval(checkAndClearToken, 100000);
+});
 </script>
 
 <template>
@@ -129,12 +195,12 @@ components: {
                             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                                 <li><a class="dropdown-item" href="#">New project...</a></li>
                                 <li><a class="dropdown-item" href="#">Settings</a></li>
-                                <li><RouterLink to="/profile" class="dropdown-item" >Profile</RouterLink></li>
+                                <li v-if="isUserLogedin===true"><RouterLink to="/profile" class="dropdown-item" >Profile</RouterLink></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li><a class="dropdown-item" href="#">Sign out</a></li>
-                                <li><RouterLink to="/registration-and-signin" class="dropdown-item" >Sign in</RouterLink></li>
+                                <li v-if="isUserLogedin===true"><a class="dropdown-item" href="#" @click="sendLogoutRequest">Sign out</a></li>
+                                <li v-else-if="isUserLogedin===false"><RouterLink to="/registration-and-signin" class="dropdown-item">Sign in</RouterLink></li>
                             </ul>
                         </div>
                     </div>
