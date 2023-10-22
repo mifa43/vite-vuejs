@@ -59,7 +59,6 @@ export default {
         this.showLoginSevrerErrorMsg = false;
         window.sessionStorage.setItem('refresh_token', response.data.refresh_token);
         window.sessionStorage.setItem('access_token', response.data.access_token);
-        alert([response.data.refresh_token,response.data.access_token] )
 				// server response
 			} catch (error) {
 				// zhavamo greske
@@ -86,7 +85,6 @@ export default {
       this.postLoginBody.UserPassword.length <= 18) {
         this.sendLoginRequest();
         this.showLoginMsg = false;
-        alert("OK")
       } else {
         this.showLoginMsg = true;
       }
