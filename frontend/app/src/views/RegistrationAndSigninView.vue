@@ -1,213 +1,393 @@
-<script setup>
-
+<script>
+import axios from 'axios';
+import { RouterLink, RouterView } from 'vue-router'
+import useVuelidate from '@vuelidate/core'
+import { required, email, minLength, sameAs, between } from '@vuelidate/validators'
+export default {
+  setup () {
+    return { v$: useVuelidate() }
+  },
+	data() {
+		return {
+		activeForm: 'login', // Initial form is the login form
+		postRegistrationBody: {
+			UserEmail: '',
+			UserPassword: '',
+			UserRePassword: '',
+		},
+    postLoginBody: {
+      UserEmail: '',
+      UserPassword: ''
+    },
+		errors: [],
+		errorsMsg: 'The email address is already used!',
+    validationMsg: ["Reasons why the form is not valid: ", 
+    "Email: ", 
+    "Password: ", 
+    "Please check that you have entered the correct email address.", 
+    "You've probably already registered.",
+    "Password must be between 8 and 18 characters long.",
+    "Passwords must match."
+    ],
+    loginMsg: ["The email or password is incorrect.", "Please check that you have entered the correct email address."],
+    showValidationMsg: false,
+    showLoginMsg: false,
+    showLoginSevrerErrorMsg: false,
+    showServerErrorMsg: false,
+		};
+	},
+  	methods: {
+		async sendRegistrationRequest() {
+			try {
+				const response = await axios.post('http://0.0.0.0:8081/register-user', this.postRegistrationBody);
+				this.activeForm = "login";  // prikazujemo login formu ako je uspesno
+				this.$router.push('/registration-and-signin');  // redirekcija na formu
+        this.showServerErrorMsg = false;
+				// server response
+			} catch (error) {
+				// zhavamo greske
+				console.error('Registration error:', error);
+				this.errors.push(error.response.data.detail);
+        this.showServerErrorMsg = true;
+			}
+		},
+    async sendLoginRequest() {
+			try {
+				const response = await axios.post('http://0.0.0.0:8083/login', this.postLoginBody);
+				// this.activeForm = "login";  // prikazujemo login formu ako je uspesno
+				this.$router.push('/profile');  // redirekcija na formu
+        this.showLoginSevrerErrorMsg = false;
+        window.sessionStorage.setItem('refresh_token', response.data.refresh_token);
+        window.sessionStorage.setItem('access_token', response.data.access_token);
+        alert([response.data.refresh_token,response.data.access_token] )
+				// server response
+			} catch (error) {
+				// zhavamo greske
+				console.error('Auth error:', error);
+				this.errors.push(error.response.data.detail);
+        this.showLoginSevrerErrorMsg = true;
+			}
+		},
+    validateRegistration() {
+      if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.postRegistrationBody.UserEmail) && 
+      this.postRegistrationBody.UserPassword.length >= 4 && 
+      this.postRegistrationBody.UserPassword.length <= 18 && 
+      this.postRegistrationBody.UserPassword === this.postRegistrationBody.UserRePassword) {
+        this.sendRegistrationRequest();
+        this.showValidationMsg = false;
+        // uslov koji mora da se ispuni ako zelimo da posaljemo request
+      } else {
+        this.showValidationMsg = true;
+      }
+    },
+    validateLogin () {
+      if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.postLoginBody.UserEmail) && 
+      this.postLoginBody.UserPassword.length >= 4 && 
+      this.postLoginBody.UserPassword.length <= 18) {
+        this.sendLoginRequest();
+        this.showLoginMsg = false;
+        alert("OK")
+      } else {
+        this.showLoginMsg = true;
+      }
+    }
+	},
+  watch: {
+    email(value){
+      this.postRegistrationBody.UserEmail = value;
+      this.validateRegistration(value);
+    },
+    emailLogin(vaLue){
+      this.postLoginBody.UserEmail = value;
+      this.validateLogin(value)
+    }
+  }
+}
 </script>
 <template>
-<h1>Errrrrrrrrrrrrr</h1>
-<div class="login-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+      <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+    </symbol>
+  </svg>
 
-	<div class="login-html">
-		<input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Sign In</label>
-		<input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab">Sign Up</label>
-		<div class="login-form">
-			<div class="sign-in-htm">
-				<div class="group">
-					<label for="pass" class="label">Email Address</label>
-					<input id="pass" type="text" class="input">
-				</div>
-				<div class="group">
-					<label for="pass" class="label">Password</label>
-					<input id="pass" type="password" class="input" data-type="password">
-				</div>
-				<div class="group">
-					<input id="check" type="checkbox" class="check" checked>
-					<label for="check"><span class="icon"></span> Keep me Signed in</label>
-				</div>
-				<div class="group">
-					<input type="submit" class="button" value="Sign In">
-				</div>
-				<div class="hr"></div>
-				<div class="foot-lnk">
-					<a href="#forgot">Forgot Password?</a>
-				</div>
-			</div>
-			<div class="sign-up-htm">
-				<div class="group">
-					<label for="pass" class="label">Email Address</label>
-					<input id="pass" type="text" class="input" v-model="emailInput">
-				</div>
-				<div class="group">
-					<label for="pass" class="label">Password</label>
-					<input id="pass" type="password" class="input" data-type="password" v-model="pass1Input">
-				</div>
-				<div class="group">
-					<label for="pass" class="label">Repeat Password</label>
-					<input id="pass" type="password" class="input" data-type="password" v-model="pass2Input">
-				</div>
-
-				<div class="group">
-					<input type="submit" class="button" value="Sign Up">
-				</div>
-				<div class="hr"></div>
-				<div class="foot-lnk">
-					<label for="tab-1">Already Member?</label>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+  <div class="wrapper">
+    <div class="title-text">
+      <div class="title login">Login Form</div>
+      <div class="title signup">Signup Form</div>
+    </div>
+    <div class="form-container">
+      <div class="slide-controls">
+        <input type="radio" name="slide" id="login" v-model="activeForm" value="login">
+        <input type="radio" name="slide" id="signup" v-model="activeForm" value="signup">
+        <label for="login" class="slide login">Login</label>
+        <label for="signup" class="slide signup">Signup</label>
+        <div class="slider-tab" :style="{ left: activeForm === 'login' ? '0%' : '50%' }"></div>
+      </div>
+      <div class="form-inner">
+        <form action="#" class="login" @submit.prevent="validateLogin" v-show="activeForm === 'login'">
+          <div class="field">
+            <input type="text" v-model="postLoginBody.UserEmail" placeholder="Email Address">
+          </div>
+          <div class="field">
+            <input type="password" v-model="postLoginBody.UserPassword" placeholder="Password" required>
+          </div>
+          <div class="pass-link forgot-password"><a href="#">Forgot password?</a></div>
+          <div>
+            <button class="btn btn-primary btnStyle" type="submit">Login</button>
+          </div>
+          <div class="signup-link">Not a member? <a href="">Signup now</a></div>
+          <div style="margin-top: 15px;" v-if="showLoginMsg">
+            <ul style="margin-top: 8px; font-size: 11px;">
+              <li>{{ loginMsg[1] }}</li>
+            </ul>
+          </div>
+          <div style="margin-top: 15px; font-size: 11px;" v-if="showLoginSevrerErrorMsg">
+            <ul style="margin-top: 8px;">
+              <li>{{ loginMsg[0] }}</li>
+            </ul>
+          </div>
+          <div style="margin-top: 15px;" v-else>
+          </div>
+        </form>
+        <form class="signup" @submit.prevent="validateRegistration" v-show="activeForm === 'signup'">
+          <div class="field">
+            <input type="text" v-model="postRegistrationBody.UserEmail" placeholder="Email Address">
+          </div>
+          <div class="field">
+            <input type="password" v-model="postRegistrationBody.UserPassword" placeholder="Password" required>
+          </div>
+          <div class="field">
+            <input type="password" v-model="postRegistrationBody.UserRePassword" placeholder="Confirm password" required>
+          </div>
+          <div class="signup-link check-box-form">I agree to the terms of use <input type="checkbox" class="form-check-input chkbx"></div>
+          <div>
+            <button class="btn btn-primary btnStyle" type="submit">Sign up</button>
+          </div>
+          <div style="margin-top: 15px;" v-if="showValidationMsg">
+            <ul style="margin-top: 8px; font-size: 11px;">
+              <li>{{ validationMsg[3] }}</li>
+              <li>{{ validationMsg[4] }}</li>
+              <li>{{ validationMsg[5] }}</li>
+              <li>{{ validationMsg[6] }}</li>
+            </ul>
+          </div>
+          <div style="margin-top: 15px; font-size: 11px;" v-else-if="showServerErrorMsg">
+            <ul style="margin-top: 8px;">
+              <li>{{ errorsMsg }}</li>
+            </ul>
+          </div>
+          <div style="margin-top: 15px;" v-else>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-body{
-	margin:0;
-	color:#6a6f8c;
-	background:#c8c8c8;
-	font:600 16px/18px 'Open Sans',sans-serif;
-}
-*,:after,:before{box-sizing:border-box}
-.clearfix:after,.clearfix:before{content:'';display:table}
-.clearfix:after{clear:both;display:block}
-a{color:inherit;text-decoration:none}
 
-.login-wrap{
-	width:100%;
-	margin:auto;
-	max-width:525px;
-	min-height:670px;
-	position:relative;
-	background:url(https://raw.githubusercontent.com/khadkamhn/day-01-login-form/master/img/bg.jpg) no-repeat center;
-	box-shadow:0 12px 15px 0 rgba(0,0,0,.24),0 17px 50px 0 rgba(0,0,0,.19);
+<style scoped> @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
-.login-html{
-	width:100%;
-	height:100%;
-	position:absolute;
-	padding:90px 70px 50px 70px;
-	background:rgba(40,57,101,.9);
+html,body{
+  display: grid;
+  height: 100%;
+  width: 100%;
+  place-items: center;
+  background: -webkit-linear-gradient(left, #074d94,#0059b3,#0d6efd, #007efc);
 }
-.login-html .sign-in-htm,
-.login-html .sign-up-htm{
-	top:0;
-	left:0;
-	right:0;
-	bottom:0;
-	position:absolute;
-	transform:rotateY(180deg);
-	backface-visibility:hidden;
-
+.chkbx{
+	border-color: #999;
 }
-.login-html .sign-in,
-.login-html .sign-up,
-.login-form .group .check{
-	display:none;
+.check-box-form{
+	padding: 6px;
 }
-.login-html .tab,
-.login-form .group .label,
-.login-form .group .button{
-	text-transform:uppercase;
-    color: #0d6efd;
+.btnStyle{
+	color: #fff;;
+	background: -webkit-linear-gradient(left,#06498b,#004080,#115ed3
+, #056cd3);
+    font-size: 18px;
+    font-weight: 500;
+	margin-top: 5px;
 }
-.login-html .tab{
-	font-size:22px;
-	margin-right:15px;
-	padding-bottom:5px;
-	margin:0 15px 10px 0;
-	display:inline-block;
-	border-bottom:2px solid transparent;
+.forgot-password{
+	text-align: center;
+	padding: 6px;
 }
-.login-html .sign-in:checked + .tab,
-.login-html .sign-up:checked + .tab{
-	color:#fff;
-	border-color:#1161ee;
+::selection{
+  background: #1a75ff;
+  color: #fff;
 }
-.login-form{
-	min-height:345px;
-	position:relative;
-	perspective:1000px;
-	transform-style:preserve-3d;
+.wrapper{
+  overflow: hidden;
+  max-width: 400px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 15px 20px rgba(0,0,0,0.1);
+  margin: 0px auto;
 }
-.login-form .group{
-	margin-bottom:15px;
+.wrapper .title-text{
+  display: flex;
+  width: 200%;
 }
-.login-form .group .label,
-.login-form .group .input,
-.login-form .group .button{
-	width:100%;
-	color:#fff;
-	display:block;
+.wrapper .title{
+  width: 50%;
+  font-size: 35px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);
 }
-.login-form .group .input,
-.login-form .group .button{
-	border:none;
-	padding:15px 20px;
-	border-radius:25px;
-	background:rgba(255,255,255,.1);
+.wrapper .slide-controls{
+  position: relative;
+  display: flex;
+  height: 50px;
+  width: 100%;
+  overflow: hidden;
+  margin: 30px 0 10px 0;
+  justify-content: space-between;
+  border: 1px solid lightgrey;
+  border-radius: 15px;
 }
-.login-form .group input[data-type="password"]{
-
-	-webkit-text-security:circle;
+.slide-controls .slide{
+  height: 100%;
+  width: 100%;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 48px;
+  cursor: pointer;
+  z-index: 1;
+  transition: all 0.6s ease;
 }
-.login-form .group .label{
-	color:#aaa;
-	font-size:12px;
+.slide-controls label.signup{
+  color: #000;
 }
-.login-form .group .button{
-	background:#1161ee;
+.slide-controls .slider-tab{
+  position: absolute;
+  height: 100%;
+  width: 50%;
+  left: 0;
+  z-index: 0;
+  border-radius: 15px;
+  background: -webkit-linear-gradient(left,#06498b,#004080,#115ed3
+, #056cd3);
+  transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);
 }
-.login-form .group label .icon{
-	width:15px;
-	height:15px;
-	border-radius:2px;
-	position:relative;
-	display:inline-block;
-	background:rgba(255,255,255,.1);
+input[type="radio"]{
+  display: none;
 }
-.login-form .group label .icon:before,
-.login-form .group label .icon:after{
-	content:'';
-	width:10px;
-	height:2px;
-	background:#fff;
-	position:absolute;
-	transition:all .2s ease-in-out 0s;
+#signup:checked ~ .slider-tab{
+  left: 50%;
 }
-.login-form .group label .icon:before{
-	left:3px;
-	width:5px;
-	bottom:6px;
-	transform:scale(0) rotate(0);
+#signup:checked ~ label.signup{
+  color: #fff;
+  cursor: default;
+  user-select: none;
 }
-.login-form .group label .icon:after{
-	top:6px;
-	right:0;
-	transform:scale(0) rotate(0);
+#signup:checked ~ label.login{
+  color: #000;
 }
-.login-form .group .check:checked + label{
-	color:#fff;
+#login:checked ~ label.signup{
+  color: #000;
 }
-.login-form .group .check:checked + label .icon{
-	background:#1161ee;
+#login:checked ~ label.login{
+  cursor: default;
+  user-select: none;
 }
-.login-form .group .check:checked + label .icon:before{
-	transform:scale(1) rotate(45deg);
+.wrapper .form-container{
+  width: 100%;
+  overflow: hidden;
 }
-.login-form .group .check:checked + label .icon:after{
-	transform:scale(1) rotate(-45deg);
+.form-container .form-inner{
+  display: flex;
+  width: 200%;
 }
-.login-html .sign-in:checked + .tab + .sign-up + .tab + .login-form .sign-in-htm{
-	transform:rotate(0);
+.form-container .form-inner form{
+  width: 50%;
+  transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);
 }
-.login-html .sign-up:checked + .tab + .login-form .sign-up-htm{
-	transform:rotate(0);
+.form-inner form .field{
+  height: 50px;
+  width: 100%;
+  margin-top: 20px;
 }
-
-.hr{
-	height:2px;
-	margin:60px 0 50px 0;
-	background:rgba(255,255,255,.2);
+.form-inner form .field input{
+  height: 100%;
+  width: 100%;
+  outline: none;
+  padding-left: 15px;
+  border-radius: 15px;
+  border: 1px solid lightgrey;
+  border-bottom-width: 2px;
+  font-size: 17px;
+  transition: all 0.3s ease;
 }
-.foot-lnk{
-	text-align:center;
+.form-inner form .field input:focus{
+  border-color: #1a75ff;
+  /* box-shadow: inset 0 0 3px #fb6aae; */
+}
+.form-inner form .field input::placeholder{
+  color: #999;
+  transition: all 0.3s ease;
+}
+form .field input:focus::placeholder{
+  color: #1a75ff;
+}
+.form-inner form .pass-link{
+  margin-top: 5px;
+}
+.form-inner form .signup-link{
+  text-align: center;
+  margin-top: 30px;
+}
+.form-inner form .pass-link a,
+.form-inner form .signup-link a{
+  color: #1a75ff;
+  text-decoration: none;
+}
+.form-inner form .pass-link a:hover,
+.form-inner form .signup-link a:hover{
+  text-decoration: underline;
+}
+form .btn{
+  height: 50px;
+  width: 100%;
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+}
+form .btn .btn-layer{
+  height: 100%;
+  width: 300%;
+  position: absolute;
+  left: -100%;
+  background: -webkit-linear-gradient(right,#003366,#004080,#0059b3
+, #0073e6);
+  border-radius: 15px;
+  transition: all 0.4s ease;;
+}
+form .btn:hover .btn-layer{
+  left: 0;
+}
+form .btn input[type="submit"]{
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  position: relative;
+  background: none;
+  border: none;
+  color: #fff;
+  padding-left: 0;
+  border-radius: 15px;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 </style>
