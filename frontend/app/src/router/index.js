@@ -3,6 +3,7 @@ import HomeView from "../views/HomeView.vue"
 import RootView from "../views/RootView.vue"
 import RegistrationAndSigninView from "../views/RegistrationAndSigninView.vue"
 import ProfileView from "../views/ProfileView.vue"
+import FirstSteps from "../views/FirstStepView.vue"
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -25,6 +26,11 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView
+    },
+    {
+      path: '/first-steps',
+      name: 'first-steps',
+      component: FirstSteps
     },
     // {
     //   path: '/about',
