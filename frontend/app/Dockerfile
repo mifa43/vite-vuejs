@@ -13,7 +13,9 @@ RUN npm install vue-material --save --force
 RUN npm i vue-material-design-icons --force
 RUN npm install axios --save --force
 RUN npm install @vuelidate/core @vuelidate/validators --save --force
-
+RUN npm i vue3-tags-input --save --force
+RUN npm install vuex --save --force
+RUN npm fund
 COPY . .
 
 # CMD ["npm","run","build","--force"]
