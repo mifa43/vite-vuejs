@@ -20,13 +20,10 @@
           <div class="mt-3 form-buttons">
             <button class="button" @click="prevStep" v-if="currentStep > 0">Prev</button>
             <button class="button button-right" @click="nextStep" v-if="currentStep < formSteps.length - 1">Next</button>
-            <button class="button submit-btn next-button" type="submit" v-else>Save</button>
+            <button class="button submit-btn next-button" type="submit" @click="showText" v-else>Save</button>
           </div>
         </form>
       </div>
-    </div>
-    <div>
-      <button @click="showText">Prikaži tekst</button>
     </div>
 </template>
   
