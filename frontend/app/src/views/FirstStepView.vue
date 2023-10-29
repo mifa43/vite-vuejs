@@ -65,8 +65,9 @@ export default {
     async sendPutRequest() {
       try {
 				const response = await axios.put('http://0.0.0.0:8085/update-user-profile', this.jsonBodyFirstSteps);
-				this.$router.push('/profile');  // redirekcija na formu
         console.log('Succes: ', response.data)
+				this.$router.push('/profile');  // redirekcija na formu
+        
         // server response
 			} catch (error) {
 				// zhavamo greske
