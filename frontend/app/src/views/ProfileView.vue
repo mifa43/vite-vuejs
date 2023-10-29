@@ -15,9 +15,13 @@ const toggleEditMode = () => {
   isEditing.value = !isEditing.value;
 
 };
+const getDetails = sessionStorage.getItem('user_detail');
+const objData = JSON.parse(getDetails);
+const firstName = objData.firstName.toString();
+const lastName = objData.lastName.toString();
 
-let userName = "Kshiti Ghelani"
-let title = "Web Developer and Designer"
+let userName = firstName + ' ' + lastName;
+let title = objData.title.toString();
 let rating = "8.5/10"
 </script>
 
