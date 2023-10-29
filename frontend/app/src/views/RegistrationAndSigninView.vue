@@ -9,6 +9,9 @@ export default {
   },
 	data() {
 		return {
+    param: {
+      token: ''
+    },
 		activeForm: 'login', // Initial form is the login form
 		postRegistrationBody: {
 			UserEmail: '',
@@ -51,14 +54,35 @@ export default {
         this.showServerErrorMsg = true;
 			}
 		},
+    async getUserProfileRequest() {
+			try {
+        const accessToken = sessionStorage.getItem('access_token');
+        this.param.token = accessToken;
+        const textBody = this.param;
+				const response = await axios.get('http://0.0.0.0:8085/get-user-profile', {params: textBody});
+        
+        if (response.data.data.query.firstStepsComplete) {
+          window.sessionStorage.setItem('user_detail', JSON.stringify(response.data.data.query));
+          this.$router.push('/profile');
+        } else {
+          this.$router.push('/first-steps');
+        }
+				// server response
+			} catch (error) {
+				// zhavamo greske
+				console.error('Registration error:', error.response.data.detail);
+			}
+    },
     async sendLoginRequest() {
 			try {
 				const response = await axios.post('http://0.0.0.0:8083/login', this.postLoginBody);
 				// this.activeForm = "login";  // prikazujemo login formu ako je uspesno
-				this.$router.push('/profile');  // redirekcija na formu
         this.showLoginSevrerErrorMsg = false;
         window.sessionStorage.setItem('refresh_token', response.data.refresh_token);
         window.sessionStorage.setItem('access_token', response.data.access_token);
+        
+        await this.getUserProfileRequest();
+        
 				// server response
 			} catch (error) {
 				// zhavamo greske
