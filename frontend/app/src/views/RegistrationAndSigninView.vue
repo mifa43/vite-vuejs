@@ -70,7 +70,7 @@ export default {
 				// server response
 			} catch (error) {
 				// zhavamo greske
-				console.error('Registration error:', error.response.data.detail);
+				console.error('Get user profile error:', error.response.data.detail);
 			}
     },
     async sendLoginRequest() {
@@ -112,7 +112,10 @@ export default {
       } else {
         this.showLoginMsg = true;
       }
-    }
+    },
+    switchToSignupForm() {
+      this.activeForm = 'signup'; // Change the active form to 'signup'
+    },
 	},
   watch: {
     email(value){
@@ -135,8 +138,8 @@ export default {
 
   <div class="wrapper">
     <div class="title-text">
-      <div class="title login">Login Form</div>
-      <div class="title signup">Signup Form</div>
+      <div class="title login" v-if="activeForm==='login'">Login Form</div>
+      <div class="title signup" v-else-if="activeForm==='signup'">Signup Form</div>
     </div>
     <div class="form-container">
       <div class="slide-controls">
@@ -158,7 +161,7 @@ export default {
           <div>
             <button class="btn btn-primary btnStyle" type="submit">Login</button>
           </div>
-          <div class="signup-link">Not a member? <a href="">Signup now</a></div>
+          <div class="signup-link">Not a member? <a href="#" @click="switchToSignupForm">Signup now</a></div>
           <div style="margin-top: 15px;" v-if="showLoginMsg">
             <ul style="margin-top: 8px; font-size: 11px;">
               <li>{{ loginMsg[1] }}</li>
@@ -247,6 +250,7 @@ html,body{
 .wrapper{
   overflow: hidden;
   max-width: 400px;
+  min-width: 300px;
   background: #fff;
   padding: 30px;
   border-radius: 15px;
