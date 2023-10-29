@@ -9,39 +9,69 @@ export default {
   },
 	data() {
 		return {
-    param: {
-      token: ''
-    },
-		activeForm: 'login', // Initial form is the login form
-		postRegistrationBody: {
-			UserEmail: '',
-			UserPassword: '',
-			UserRePassword: '',
-		},
-    postLoginBody: {
-      UserEmail: '',
-      UserPassword: ''
-    },
-		errors: [],
-		errorsMsg: 'The email address is already used!',
-    validationMsg: ["Reasons why the form is not valid: ", 
-    "Email: ", 
-    "Password: ", 
-    "Please check that you have entered the correct email address.", 
-    "You've probably already registered.",
-    "Password must be between 8 and 18 characters long.",
-    "Passwords must match."
-    ],
-    loginMsg: ["The email or password is incorrect.", "Please check that you have entered the correct email address."],
-    showValidationMsg: false,
-    showLoginMsg: false,
-    showLoginSevrerErrorMsg: false,
-    showServerErrorMsg: false,
+      postRestartPassBody: {
+        UserEmail: ''
+      },
+      popupVisible: false,
+      inputValue: "",
+      param: {
+        token: ''
+      },
+      activeForm: 'login', // Initial form is the login form
+      postRegistrationBody: {
+        UserEmail: '',
+        UserPassword: '',
+        UserRePassword: '',
+      },
+      postLoginBody: {
+        UserEmail: '',
+        UserPassword: ''
+      },
+      errors: [],
+      errorsMsg: 'The email address is already used!',
+      validationMsg: ["Reasons why the form is not valid: ", 
+      "Email: ", 
+      "Password: ", 
+      "Please check that you have entered the correct email address.", 
+      "You've probably already registered.",
+      "Password must be between 8 and 18 characters long.",
+      "Passwords must match."
+      ],
+      loginMsg: ["The email or password is incorrect.", "Please check that you have entered the correct email address."],
+      showValidationMsg: false,
+      showLoginMsg: false,
+      showLoginSevrerErrorMsg: false,
+      showServerErrorMsg: false,
 		};
 	},
   	methods: {
+    showPopup() {
+      this.popupVisible = true;
+    },
+    submit() {
+      // Ovde možete dodati logiku za rukovanje unosom i dugmetom
+      // Na primer, možete poslati unos na server ili izvršiti drugu željenu akciju.
+      // alert(this.inputValue);
+      this.popupVisible = false; // Zatvorite popup nakon što završite akciju
+    },
+    closePopup() {
+      this.popupVisible = false;
+    },
+    async sendRestartPasswordRequest() {
+			try {
+				const response = await axios.post('http://0.0.0.0:8083/password-restart', this.postRestartPassBody);
+        alert(response.data);
+        this.popupVisible = false;
+        this.$router.push('/registration-and-signin');
+				// server response
+			} catch (error) {
+				// zhavamo greske
+				console.error('Password restart error:', error);
+			}
+		},
 		async sendRegistrationRequest() {
 			try {
+        
 				const response = await axios.post('http://0.0.0.0:8081/register-user', this.postRegistrationBody);
 				this.activeForm = "login";  // prikazujemo login formu ako je uspesno
 				this.$router.push('/registration-and-signin');  // redirekcija na formu
@@ -113,6 +143,15 @@ export default {
         this.showLoginMsg = true;
       }
     },
+    validateRestartPassword () {
+      if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.postRestartPassBody.UserEmail)) {
+        this.sendRestartPasswordRequest();
+        console.log("Password recovery is sended!")
+        // this.showLoginMsg = false;
+      } else {
+        console.log("Email not founded|Email recovery")
+      }
+    },
     switchToSignupForm() {
       this.activeForm = 'signup'; // Change the active form to 'signup'
     },
@@ -122,9 +161,13 @@ export default {
       this.postRegistrationBody.UserEmail = value;
       this.validateRegistration(value);
     },
-    emailLogin(vaLue){
+    emailLogin(value){
       this.postLoginBody.UserEmail = value;
       this.validateLogin(value)
+    },
+    restartPassword(value) {
+      this.postRestartPassBody.UserEmail = value;
+      this.validateRestartPassword(value);
     }
   }
 }
@@ -157,7 +200,7 @@ export default {
           <div class="field">
             <input type="password" v-model="postLoginBody.UserPassword" placeholder="Password" required>
           </div>
-          <div class="pass-link forgot-password"><a href="#">Forgot password?</a></div>
+          <div class="pass-link forgot-password"><a href="#" @click="showPopup">Forgot password?</a></div>
           <div>
             <button class="btn btn-primary btnStyle" type="submit">Login</button>
           </div>
@@ -208,6 +251,19 @@ export default {
       </div>
     </div>
   </div>
+  <div>
+    <div v-if="popupVisible" class="popup alert alert-light">
+      <a href="#" @click="closePopup" class="close-popup btn btn-danger"><strong>X</strong></a>
+      <div class="content-popup">
+        <p class="text-container">In order to recover your password, you need to enter your email address, you need to check your inbox where we sent you a password recovery link.</p>
+        <form @submit.prevent="validateRestartPassword">
+          <input type="email" v-model="postRestartPassBody.UserEmail" class="form-control" placeholder="Email" required/>
+          <button type="submit" class="restart-password-btn btn btn-primary">Potvrdi</button>
+        </form>
+
+      </div>
+    </div>
+  </div>
 </template>
 
 
@@ -224,6 +280,39 @@ html,body{
   width: 100%;
   place-items: center;
   background: -webkit-linear-gradient(left, #074d94,#0059b3,#0d6efd, #007efc);
+}
+.text-container {
+  padding: 10px;
+  font-size: 15px;
+}
+.content-popup {
+  margin-top: 30px;
+}
+.close-popup {
+  position: absolute;
+  top: 5px; /* Podešavanje željenog razmaka od vrha */
+  right: 5px; /* Podešavanje željenog razmaka sa desne strane */
+  cursor: pointer; /* Dodajte pokazivač prsta kako biste označili da je to dugme */
+  border-radius: 30px;
+  text-decoration: none;
+  background: -webkit-linear-gradient(left,#d3050f,#d31111,#d31111,#d3050f);
+}
+.restart-password-btn {
+  margin-top: 10px;
+  background: -webkit-linear-gradient(left,#06498b,#004080,#115ed3,#056cd3);
+  font-size: 18px;
+  font-weight: 500;
+}
+.popup {
+  position: absolute;
+  max-width: 600px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .chkbx{
 	border-color: #999;
