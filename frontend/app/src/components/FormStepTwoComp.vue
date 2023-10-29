@@ -31,7 +31,7 @@ export default {
             :placeholder="[[$store.state.component2Data.links]]">
         </div>
         <div class="col">
-          <label for="about">Links</label>
+          <label for="about">About</label>
           <textarea rows="3" 
             id="about" 
             name="about" 
