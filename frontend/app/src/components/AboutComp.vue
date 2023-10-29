@@ -1,17 +1,36 @@
 <script>
+import { ref, onMounted } from 'vue';
 export default {
   props: {
     isEditing: Boolean,
   },
   data() {
     return {
-      name: 'Kshiti Ghelani',
-      userID: 'Kshiti123',
-      email: 'kshitighelani@gmail.com',
-      phone: '123 456 7890',
-      profesion: 'Web Developer and Designer',
+      name: '',
+      userID: '',
+      email: '',
+      phone: '',
+      profesion: '',
     };
   },
+  methods: {
+    setDataFields() {
+        const getDetails = sessionStorage.getItem('user_detail');
+        const objData = JSON.parse(getDetails);
+        const firstName = objData.firstName.toString();
+        const lastName = objData.lastName.toString();
+
+        this.name = firstName + ' ' + lastName;
+        this.userID = objData.keycloakUserID.toString();
+        this.email = objData.mail.toString();
+        this.phone = objData.phoneNumber.toString();
+        this.profesion = objData.description.toString();
+    }
+  },
+    mounted() {
+        // 2. The DOM is ready to go now
+        this.setDataFields();
+    },
 };
 </script>
 
@@ -72,11 +91,11 @@ export default {
         </div>
         <div class="row">
             <div class="col-md-6">
-                <label>Profession</label>
+                <label>Description</label>
             </div>
             <div class="col-md-6">
                 <template v-if="isEditing">
-                    <input type="text" class="form-control" v-model="profesion" />
+                    <textarea rows="3"  class="form-control" v-model="profesion"></textarea>
                 </template>
                 <template v-else>
                     <p>{{ profesion }}</p>

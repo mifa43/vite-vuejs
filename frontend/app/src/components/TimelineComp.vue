@@ -5,13 +5,29 @@ export default {
   },
   data() {
     return {
-      expirinace: 'Expert',
-      payRate: '10$/hr',
-      projectsNum: '230',
-      engLvl: 'C2',
-      availability: '6 mounth',
+        about: '',
+        links: '',
+        tagInput: [],
+        engLvl: 'C2',
+        availability: '6 mounth',
     };
   },
+  methods: {
+    setDataFields() {
+        
+        const getDetails = sessionStorage.getItem('user_detail');
+        const objData = JSON.parse(getDetails);
+        this.about = objData.about.toString();
+        this.links = objData.links.toString();
+
+        let tagStr = objData.tagInput.slice(1, -1).split(',');
+        this.tagInput = tagStr[0] + " " + tagStr[1] + " " + tagStr[2]
+    }
+  },
+    mounted() {
+        // 2. The DOM is ready to go now
+        this.setDataFields();
+    },
 };
 </script>
 
@@ -20,40 +36,40 @@ export default {
 <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
             <div class="row">
                 <div class="col-md-6">
-                    <label>Experience</label>
+                    <label>About</label>
                 </div>
                 <div class="col-md-6">
                     <template v-if="isEditing">
-                        <input type="text" class="form-control" v-model="expirinace" />
+                        <input type="text" class="form-control" v-model="about" />
                     </template>
                     <template v-else>
-                        <p>{{ expirinace }}</p>
+                        <p>{{ about }}</p>
                     </template>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <label>Hourly Rate</label>
+                    <label>Links</label>
                 </div>
                 <div class="col-md-6">
                     <template v-if="isEditing">
-                        <input type="text" class="form-control" v-model="payRate" />
+                        <input type="text" class="form-control" v-model="links" />
                     </template>
                     <template v-else>
-                        <p>{{ payRate }}</p>
+                        <p>{{ links }}</p>
                     </template>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <label>Total Projects</label>
+                    <label>Tags</label>
                 </div>
                 <div class="col-md-6">
                     <template v-if="isEditing">
-                        <input type="text" class="form-control" v-model="projectsNum" />
+                        <input type="text" class="form-control" v-model="tagInput" />
                     </template>
                     <template v-else>
-                        <p>{{ projectsNum }}</p>
+                        <p>{{ tagInput }}</p>
                     </template>
                 </div>
             </div>
