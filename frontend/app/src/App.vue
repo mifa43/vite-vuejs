@@ -37,6 +37,7 @@ const sendLogoutRequest = async () => {
         const response = await axios.post('http://0.0.0.0:8083/logout', requestLogoutBody);
         sessionStorage.removeItem('access_token');
         sessionStorage.removeItem('refresh_token');
+        sessionStorage.removeItem('user_detail');
         router.push('/registration-and-signin');  // redirekcija na formu
         // server response
     } catch (error) {
